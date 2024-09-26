@@ -127,21 +127,21 @@ static void ulan_get_stats64(struct net_device *dev, struct rtnl_link_stats64 *s
 
     for_each_possible_cpu(i) {
         const struct pcpu_dstats *dstats;
-        u64 tbytes_tx, tpackets_tx, tbytes_rx, tpackets_rx;
+        u64 bytes_tx, packets_tx, bytes_rx, packets_rx;
         unsigned int start;
 
         dstats = per_cpu_ptr(dev->dstats, i);
         do {
             start = u64_stats_fetch_begin_irq(&dstats->syncp);
-            tbytes_tx = dstats->tx_bytes;
-            tpackets_tx = dstats->tx_packets;
-            tbytes_rx = dstats->rx_bytes;
-            tpackets_rx = dstats->rx_packets;
+            bytes_tx   = dstats->tx_bytes;
+            packets_tx = dstats->tx_packets;
+            bytes_rx   = dstats->rx_bytes;
+            packets_rx = dstats->rx_packets;
         } while (u64_stats_fetch_retry_irq(&dstats->syncp, start));
-        stats->tx_bytes += tbytes_tx;
-        stats->tx_packets += tpackets_tx;
-        stats->rx_bytes += tbytes_tx;
-        stats->rx_packets += tbytes_rx;
+        stats->tx_bytes   += bytes_tx;
+        stats->tx_packets += packets_tx;
+        stats->rx_bytes   += bytes_tx;
+        stats->rx_packets += bytes_rx;
     }
 }
 
