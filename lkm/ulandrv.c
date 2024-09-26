@@ -232,7 +232,7 @@ static void ulan_setup(struct net_device *dev) {
     dev->hw_enc_features |= dev->features;
     eth_hw_addr_random(dev);
 
-    dev->mtu = 1458; /* 1500 - Ethernet(14) - IP(20) - UDP(8) */
+    dev->mtu = 1442; /* 1514 - Ethernet(14) - IP(20) - UDP(8) - sdlt(30) */
 }
 
 static int ulan_validate(struct nlattr *tb[], struct nlattr *data[],
