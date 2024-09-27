@@ -297,7 +297,13 @@ static ssize_t ulan_io_write(struct file *filp, const char __user *ubuf, size_t 
     }
     skb->protocol = htons(ETH_P_IP);//eth_type_trans(skb, dev_ulan);
     skb->len = count;
-    netif_rx(skb);
+    
+    // Llamar directamente a la pila de IP
+    if (ip_rcv(skb, skb->dev, NULL, NULL) != NET_RX_SUCCESS) {
+        dev_kfree_skb(skb);
+        return -EFAULT;
+    }
+    //netif_rx(skb);
 
     u64_stats_update_begin(&dstats->syncp);
     dstats->rx_packets++;
