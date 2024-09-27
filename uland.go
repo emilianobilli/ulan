@@ -115,7 +115,7 @@ func (io *IODevice) WriteRawIP(pkt []byte) (int, error) {
 }
 
 func UlanDriver() (*IODevice, error) {
-	file, err := os.Open("/dev/ulan_io")
+	file, err := os.OpenFile("/dev/ulan_io", os.O_RDWR, 0644)
 	if err != nil {
 		return nil, err
 	}
