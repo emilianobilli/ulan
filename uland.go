@@ -95,7 +95,7 @@ func (e *EthernetFrame) Len() int {
 }
 
 func (e *EthernetFrame) RawIP() []byte {
-	return e.buffer[EthernetHdrSize : e.len-EthernetHdrSize]
+	return e.buffer[EthernetHdrSize:e.len]
 }
 
 func (io *IODevice) ReadEthFrame() (*EthernetFrame, error) {
