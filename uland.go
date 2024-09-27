@@ -3,6 +3,7 @@ package ulan
 import (
 	"encoding/binary"
 	"errors"
+	"fmt"
 	"net"
 	"os"
 
@@ -108,6 +109,8 @@ func (io *IODevice) ReadEthFrame() (*EthernetFrame, error) {
 }
 
 func (io *IODevice) WriteRawIP(pkt []byte) (int, error) {
+	var ip ipv4.Header
+	fmt.Println(ip.Parse(pkt))
 	buf := make([]byte, EthernetHdrSize+len(pkt))
 	copy(buf, io.localMacAddress)
 	copy(buf[EthernetHdrSize:], pkt)
