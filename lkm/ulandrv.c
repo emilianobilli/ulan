@@ -299,8 +299,9 @@ static ssize_t ulan_io_write(struct file *filp, const char __user *ubuf, size_t 
     skb->len = count;
     
     // Llamar directamente a la pila de IP
-    if (ip_rcv(skb, skb->dev, NULL, NULL) != NET_RX_SUCCESS) {
-        dev_kfree_skb(skb);
+    // Procesar el paquete IP directamente usando netif_receive_skb
+    if (netif_receive_skb(skb) != NET_RX_SUCCESS) {
+        dev_kfree_skb(skb);  // Liberar si falla
         return -EFAULT;
     }
     //netif_rx(skb);
