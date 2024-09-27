@@ -111,7 +111,7 @@ func (io *IODevice) ReadEthFrame() (*EthernetFrame, error) {
 func (io *IODevice) WriteRawIP(pkt []byte) (int, error) {
 	var ip ipv4.Header
 	ip.Parse(pkt)
-	fmt.Println(ip)
+	fmt.Println("Original len: ", len(pkt), ip.String())
 	buf := make([]byte, EthernetHdrSize+len(pkt))
 	copy(buf, io.localMacAddress)
 	copy(buf[EthernetHdrSize:], pkt)
