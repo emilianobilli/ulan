@@ -101,6 +101,7 @@ func (e *EthernetFrame) RawIP() []byte {
 func (io *IODevice) ReadEthFrame() (*EthernetFrame, error) {
 	var frame EthernetFrame
 	n, e := io.fd.Read(frame.buffer[:])
+	fmt.Println("Leido: ", n)
 	if e != nil {
 		return nil, e
 	}
