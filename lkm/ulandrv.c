@@ -295,16 +295,21 @@ static ssize_t ulan_io_write(struct file *filp, const char __user *ubuf, size_t 
         dev_kfree_skb(skb);
         return -EFAULT;
     }
-    skb->protocol = htons(ETH_P_IP);//eth_type_trans(skb, dev_ulan);
+
     skb->len = count;
-    
-    // Llamar directamente a la pila de IP
-    // Procesar el paquete IP directamente usando netif_receive_skb
-    if (netif_receive_skb(skb) != NET_RX_SUCCESS) {
-        dev_kfree_skb(skb);  // Liberar si falla
+// Establecer que estamos manejando un paquete IP
+    skb->protocol = htons(ETH_P_IP);  // Protocolo IPv4
+    skb->dev = dev_ulan;              // Asociar con el dispositivo de red
+    skb->pkt_type = PACKET_HOST;      // Configurar como paquete destinado a este host
+
+    // Establecer que el paquete ya tiene una cabecera IP
+    skb->network_header = skb->data;  // Indicar que los datos ya son un paquete IP completo
+
+    // Inyectar el paquete IP directamente en la pila IP usando netif_rx
+    if (netif_rx(skb) != NET_RX_SUCCESS) {
+        dev_kfree_skb(skb);
         return -EFAULT;
     }
-    //netif_rx(skb);
 
     u64_stats_update_begin(&dstats->syncp);
     dstats->rx_packets++;
