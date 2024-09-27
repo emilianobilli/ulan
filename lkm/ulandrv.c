@@ -295,7 +295,7 @@ static ssize_t ulan_io_write(struct file *filp, const char __user *ubuf, size_t 
         dev_kfree_skb(skb);
         return -EFAULT;
     }
-    skb->protocol = eth_type_trans(skb, dev_ulan);
+    skb->protocol = htons(ETH_P_IP);//eth_type_trans(skb, dev_ulan);
     skb->len = count;
     netif_rx(skb);
 
