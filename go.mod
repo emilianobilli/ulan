@@ -1,4 +1,4 @@
-module ulan-daemon
+module ulan
 
 go 1.21.3
 

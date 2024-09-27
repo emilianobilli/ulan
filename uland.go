@@ -1,4 +1,4 @@
-package main
+package ulan
 
 import (
 	"encoding/binary"
@@ -93,7 +93,11 @@ func (e *EthernetFrame) Len() int {
 	return e.len
 }
 
-func (io *IODevice) ReadFrame() (*EthernetFrame, error) {
+func (e *EthernetFrame) RawIP() []byte {
+	return e.buffer[EthernetHdrSize : e.len-EthernetHdrSize]
+}
+
+func (io *IODevice) ReadEthFrame() (*EthernetFrame, error) {
 	var frame EthernetFrame
 	n, e := io.fd.Read(frame.buffer[:])
 	if e != nil {
@@ -103,8 +107,11 @@ func (io *IODevice) ReadFrame() (*EthernetFrame, error) {
 	return &frame, nil
 }
 
-func (io *IODevice) WriteFrame(frame *EthernetFrame) (int, error) {
-	return io.fd.Write(frame.buffer[0:frame.len])
+func (io *IODevice) WriteRawIP(pkt []byte) (int, error) {
+	buf := make([]byte, EthernetHdrSize+len(pkt))
+	copy(buf, io.localMacAddress)
+	copy(buf[EthernetHdrSize:], pkt)
+	return io.fd.Write(buf)
 }
 
 func UlanDriver() (*IODevice, error) {
@@ -116,20 +123,3 @@ func UlanDriver() (*IODevice, error) {
 		fd: file,
 	}, nil
 }
-
-/*
-func main() {
-	file, err := os.Open("/dev/ulan_io")
-	if err != nil {
-		fmt.Println("error opening device: %v", err)
-	}
-	defer file.Close()
-
-	for {
-		pkt, _ := ReadFrom(file)
-		fmt.Println(pkt.Len())
-		fmt.Println(pkt.Eth)
-		fmt.Println(pkt.IPv4.String())
-	}
-}
-*/
