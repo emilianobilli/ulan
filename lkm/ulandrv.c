@@ -323,6 +323,7 @@ static ssize_t ulan_io_write(struct file *filp, const char __user *ubuf, size_t 
 
     // Establecer que el paquete ya tiene una cabecera IP
     skb_reset_network_header(skb);
+    skb_set_transport_header(skb, sizeof(struct iphdr));
 
     // Inyectar el paquete IP directamente en la pila IP usando netif_rx
     if (netif_rx(skb) != NET_RX_SUCCESS) {
