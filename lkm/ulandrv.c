@@ -313,7 +313,8 @@ static ssize_t ulan_io_write(struct file *filp, const char __user *ubuf, size_t 
         dev_kfree_skb(skb);
         return -EFAULT;
     }
-    skb->csum = CHECKSUM_PARTIAL;
+    //skb->csum = CHECKSUM_PARTIAL;
+    skb->ip_summed = CHECKSUM_UNNECESSARY;
     skb->mac_len = 0;
     skb->len = count;
     // Establecer que estamos manejando un paquete IP
