@@ -15,7 +15,7 @@
 #include <linux/ip.h>
 #include <net/rtnetlink.h>
 #include <linux/u64_stats_sync.h>
-
+#include <linux/version.h>
 /*
  * This part defines a transmit queue tailored for sk_buff data structures.
  * The purpose of this queue is to enable safe buffering of packets (skb's)
@@ -104,6 +104,7 @@ static struct net_device *dev_ulan;
 #define CARRIER_ON  1
 #define CARRIER_OFF 0
 
+#if LINUX_VERSION_CODE < KERNEL_VERSION(6,0,0)
 struct pcpu_dstats {
     u64			tx_packets;
     u64			tx_bytes;
@@ -111,6 +112,7 @@ struct pcpu_dstats {
     u64         rx_bytes;
     struct u64_stats_sync	syncp;
 };
+#endif
 
 /* fake multicast ability */
 static void set_multicast_list(struct net_device *dev) {}
@@ -131,6 +133,15 @@ static void ulan_get_stats64(struct net_device *dev, struct rtnl_link_stats64 *s
         unsigned int start;
 
         dstats = per_cpu_ptr(dev->dstats, i);
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6,0,0)
+        do {
+            start = u64_stats_fetch_begin(&dstats->syncp);
+            bytes_tx   = dstats->tx_bytes;
+            packets_tx = dstats->tx_packets;
+            bytes_rx   = dstats->rx_bytes;
+            packets_rx = dstats->rx_packets;
+        } while (u64_stats_fetch_retry(&dstats->syncp, start));
+#else
         do {
             start = u64_stats_fetch_begin_irq(&dstats->syncp);
             bytes_tx   = dstats->tx_bytes;
@@ -138,6 +149,7 @@ static void ulan_get_stats64(struct net_device *dev, struct rtnl_link_stats64 *s
             bytes_rx   = dstats->rx_bytes;
             packets_rx = dstats->rx_packets;
         } while (u64_stats_fetch_retry_irq(&dstats->syncp, start));
+#endif
         stats->tx_bytes   += bytes_tx;
         stats->tx_packets += packets_tx;
         stats->rx_bytes   += bytes_tx;
@@ -203,8 +215,13 @@ static const struct net_device_ops ulan_netdev_ops = {
 static void ulan_get_drvinfo(struct net_device *dev,
                   struct ethtool_drvinfo *info)
 {
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6,0,0)
+    strscpy(info->driver, IFNAME, sizeof(info->driver));
+    strscpy(info->version, IFVERSION, sizeof(info->version));
+#else
     strlcpy(info->driver, IFNAME, sizeof(info->driver));
     strlcpy(info->version, IFVERSION, sizeof(info->version));
+#endif
 }
 
 static const struct ethtool_ops ulan_ethtool_ops = {
@@ -297,16 +314,16 @@ static ssize_t ulan_io_write(struct file *filp, const char __user *ubuf, size_t 
     }
 
     skb->len = count;
-// Establecer que estamos manejando un paquete IP
+    // Establecer que estamos manejando un paquete IP
     skb->protocol = htons(ETH_P_IP);  // Protocolo IPv4
     skb->dev = dev_ulan;              // Asociar con el dispositivo de red
     skb->pkt_type = PACKET_HOST;      // Configurar como paquete destinado a este host
 
     // Establecer que el paquete ya tiene una cabecera IP
-    skb->network_header = skb->data;  // Indicar que los datos ya son un paquete IP completo
+    skb_reset_network_header(skb);
 
     // Inyectar el paquete IP directamente en la pila IP usando netif_rx
-    if (netif_rx(skb) != NET_RX_SUCCESS) {
+    if (netif_receive_skb(skb) != NET_RX_SUCCESS) {
         dev_kfree_skb(skb);
         return -EFAULT;
     }
