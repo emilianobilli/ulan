@@ -229,71 +229,6 @@ static const struct ethtool_ops ulan_ethtool_ops = {
     .get_ts_info		= ethtool_op_get_ts_info,
 };
 
-void print_skb_info(struct sk_buff *skb) {
-    struct iphdr *ip_header;
-
-    if (!skb) {
-        printk(KERN_ERR "SKB is NULL\n");
-        return;
-    }
-
-    // Imprimir información básica de sk_buff
-    printk(KERN_INFO "----- sk_buff info -----\n");
-    printk(KERN_INFO "skb->len: %u\n", skb->len);           // Longitud total de los datos en el sk_buff
-    printk(KERN_INFO "skb->data_len: %u\n", skb->data_len);  // Longitud de los datos fragmentados
-    printk(KERN_INFO "skb->truesize: %u\n", skb->truesize);  // Tamaño real del sk_buff (incluyendo buffers y frags)
-    printk(KERN_INFO "skb->protocol: 0x%04x\n", ntohs(skb->protocol));  // Protocolo de la capa de red (ETH_P_IP)
-    printk(KERN_INFO "skb->dev: %s\n", skb->dev ? skb->dev->name : "NULL");  // Nombre del dispositivo asociado
-    printk(KERN_INFO "skb->pkt_type: %u\n", skb->pkt_type);  // Tipo de paquete (PACKET_HOST, etc.)
-    printk(KERN_INFO "skb->priority: %u\n", skb->priority);  // Prioridad del paquete
-    printk(KERN_INFO "skb->mark: %u\n", skb->mark);          // Marca del paquete (usada en routing)
-    printk(KERN_INFO "skb->queue_mapping: %u\n", skb->queue_mapping);  // Fila de salida asociada
-
-    // Verificar si el paquete tiene fragmentos de páginas asociados
-    if (skb_shinfo(skb)->nr_frags > 0) {
-        printk(KERN_INFO "skb has %u frags\n", skb_shinfo(skb)->nr_frags);  // Número de fragmentos asociados
-    } else {
-        printk(KERN_INFO "skb has no frags\n");
-    }
-
-    // Imprimir los punteros del sk_buff
-    printk(KERN_INFO "skb->head: %p\n", skb->head);  // Puntero al buffer principal
-    printk(KERN_INFO "skb->data: %p\n", skb->data);  // Puntero a los datos actuales
-    printk(KERN_INFO "skb->tail: %p\n", skb_tail_pointer(skb));  // Puntero a la cola
-    printk(KERN_INFO "skb->end: %p\n", skb_end_pointer(skb));  // Puntero al final del buffer
-    printk(KERN_INFO "skb->cloned: %u\n", skb->cloned);  // Indica si el skb ha sido clonado
-
-    // Verificar si hay una cabecera MAC asociada
-    if (skb_mac_header_was_set(skb)) {
-        printk(KERN_INFO "MAC header set\n");
-        printk(KERN_INFO "skb_mac_header: %p\n", skb_mac_header(skb));
-    } else {
-        printk(KERN_INFO "MAC header not set\n");
-    }
-
-    // Obtener la cabecera IP si está presente
-    ip_header = ip_hdr(skb);
-    if (ip_header) {
-        printk(KERN_INFO "----- IP Header info -----\n");
-        printk(KERN_INFO "IP version: %u\n", ip_header->version);  // Versión de IP (4 o 6)
-        printk(KERN_INFO "IP header length: %u\n", ip_header->ihl * 4);  // Longitud de la cabecera IP
-        printk(KERN_INFO "TOS (Type of Service): %u\n", ip_header->tos);  // TOS (Type of Service)
-        printk(KERN_INFO "Total Length: %u\n", ntohs(ip_header->tot_len));  // Longitud total del paquete IP
-        printk(KERN_INFO "Identification: %u\n", ntohs(ip_header->id));  // Identificación del paquete
-        printk(KERN_INFO "Fragment Offset: %u\n", ntohs(ip_header->frag_off) & 0x1FFF);  // Offset de fragmentación
-        printk(KERN_INFO "TTL (Time to Live): %u\n", ip_header->ttl);  // Tiempo de vida (TTL)
-        printk(KERN_INFO "Protocol: %u\n", ip_header->protocol);  // Protocolo de la capa de transporte (TCP=6, UDP=17)
-        printk(KERN_INFO "Checksum: 0x%04x\n", ntohs(ip_header->check));  // Checksum de la cabecera IP
-        printk(KERN_INFO "Source IP: %pI4\n", &ip_header->saddr);  // Dirección IP de origen
-        printk(KERN_INFO "Destination IP: %pI4\n", &ip_header->daddr);  // Dirección IP de destino
-    } else {
-        printk(KERN_ERR "IP Header is NULL\n");
-    }
-
-    printk(KERN_INFO "-----------------------------\n");
-}
-
-
 
 static void ulan_setup(struct net_device *dev) {
     ether_setup(dev);
@@ -389,7 +324,6 @@ static ssize_t ulan_io_write(struct file *filp, const char __user *ubuf, size_t 
     // Establecer que el paquete ya tiene una cabecera IP
     skb_reset_network_header(skb);
 
-    print_skb_info(skb);
     // Inyectar el paquete IP directamente en la pila IP usando netif_rx
     if (netif_rx(skb) != NET_RX_SUCCESS) {
         dev_kfree_skb(skb);
