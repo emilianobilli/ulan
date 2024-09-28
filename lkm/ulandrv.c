@@ -153,7 +153,7 @@ static void ulan_get_stats64(struct net_device *dev, struct rtnl_link_stats64 *s
         stats->tx_bytes   += bytes_tx;
         stats->tx_packets += packets_tx;
         stats->rx_bytes   += bytes_tx;
-        stats->rx_packets += bytes_rx;
+        stats->rx_packets += packets_tx;
     }
 }
 
