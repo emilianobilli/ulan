@@ -291,25 +291,6 @@ void print_skb_info(struct sk_buff *skb) {
         printk(KERN_ERR "IP Header is NULL\n");
     }
 
-    // Imprimir información de la cabecera de transporte (si corresponde)
-    if (ip_header && ip_header->protocol == IPPROTO_TCP) {
-        struct tcphdr *tcp_header = tcp_hdr(skb);
-        printk(KERN_INFO "----- TCP Header info -----\n");
-        printk(KERN_INFO "Source port: %u\n", ntohs(tcp_header->source));  // Puerto fuente
-        printk(KERN_INFO "Destination port: %u\n", ntohs(tcp_header->dest));  // Puerto destino
-        printk(KERN_INFO "Sequence number: %u\n", ntohl(tcp_header->seq));  // Número de secuencia
-        printk(KERN_INFO "Ack number: %u\n", ntohl(tcp_header->ack_seq));  // Número de acuse de recibo
-        printk(KERN_INFO "Window: %u\n", ntohs(tcp_header->window));  // Tamaño de la ventana TCP
-        printk(KERN_INFO "TCP flags: 0x%02x\n", tcp_header->ack | tcp_header->syn | tcp_header->fin);
-    } else if (ip_header && ip_header->protocol == IPPROTO_UDP) {
-        struct udphdr *udp_header = udp_hdr(skb);
-        printk(KERN_INFO "----- UDP Header info -----\n");
-        printk(KERN_INFO "Source port: %u\n", ntohs(udp_header->source));  // Puerto fuente
-        printk(KERN_INFO "Destination port: %u\n", ntohs(udp_header->dest));  // Puerto destino
-        printk(KERN_INFO "UDP length: %u\n", ntohs(udp_header->len));  // Longitud del paquete UDP
-        printk(KERN_INFO "UDP checksum: 0x%04x\n", ntohs(udp_header->check));  // Checksum de UDP
-    }
-
     printk(KERN_INFO "-----------------------------\n");
 }
 
