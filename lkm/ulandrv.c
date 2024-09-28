@@ -323,7 +323,7 @@ static ssize_t ulan_io_write(struct file *filp, const char __user *ubuf, size_t 
     skb_reset_network_header(skb);
 
     // Inyectar el paquete IP directamente en la pila IP usando netif_rx
-    if (netif_receive_skb(skb) != NET_RX_SUCCESS) {
+    if (netif_rx(skb) != NET_RX_SUCCESS) {
         dev_kfree_skb(skb);
         return -EFAULT;
     }
