@@ -242,7 +242,6 @@ void print_skb_info(struct sk_buff *skb) {
     printk(KERN_INFO "skb->len: %u\n", skb->len);           // Longitud total de los datos en el sk_buff
     printk(KERN_INFO "skb->data_len: %u\n", skb->data_len);  // Longitud de los datos fragmentados
     printk(KERN_INFO "skb->truesize: %u\n", skb->truesize);  // Tamaño real del sk_buff (incluyendo buffers y frags)
-    printk(KERN_INFO "skb->users: %u\n", atomic_read(&skb->users));  // Conteo de referencias
     printk(KERN_INFO "skb->protocol: 0x%04x\n", ntohs(skb->protocol));  // Protocolo de la capa de red (ETH_P_IP)
     printk(KERN_INFO "skb->dev: %s\n", skb->dev ? skb->dev->name : "NULL");  // Nombre del dispositivo asociado
     printk(KERN_INFO "skb->pkt_type: %u\n", skb->pkt_type);  // Tipo de paquete (PACKET_HOST, etc.)
